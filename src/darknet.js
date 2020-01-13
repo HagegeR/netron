@@ -56,13 +56,8 @@ darknet.Model = class {
 };
 
 darknet.Graph = class {
-<<<<<<< Updated upstream
-    
-    constructor(metadata, cfg, weights) {
-=======
 
     constructor(metadata, cfg /* weights */) {
->>>>>>> Stashed changes
         this._inputs = [];
         this._outputs = [];
         this._nodes = [];
@@ -131,8 +126,6 @@ darknet.Graph = class {
             }
         }
 
-<<<<<<< Updated upstream
-=======
         const inputType = params.w && params.h && params.c ?
             new darknet.TensorType('float32', new darknet.TensorShape([params.w, params.h, params.c])) :
             new darknet.TensorType('float32', new darknet.TensorShape([params.inputs]));
@@ -140,7 +133,6 @@ darknet.Graph = class {
         params.arguments = [new darknet.Argument(inputName, inputType, null)];
         this._inputs.push(new darknet.Parameter(inputName, true, params.arguments));
 
->>>>>>> Stashed changes
         if (sections.length === 0) {
             throw new darknet.Error('Config file has no sections.');
         }
@@ -163,19 +155,6 @@ darknet.Graph = class {
 
         let inputs = [ inputName ];
         for (let i = 0; i < sections.length; i++) {
-<<<<<<< Updated upstream
-            const layer = sections[i];
-            layer._inputs = inputs;
-            inputs = [ i.toString() ];
-            switch (layer.type) {
-                case 'shortcut': {
-                    let from = Number.parseInt(layer.options.from, 10);
-                    from = (from >= 0) ? from : (i + from);
-                    const shortcut = sections[from];
-                    if (shortcut) {
-                        layer._inputs.push(shortcut._outputs[0]);
-                    }
-=======
             let section = sections[i];
             section.layer = {};
             section.tensors = [];
@@ -210,7 +189,6 @@ darknet.Graph = class {
                         }
                     }
                     delete options.from;
->>>>>>> Stashed changes
                     break;
                 }
                 case 'route': {
@@ -226,8 +204,6 @@ darknet.Graph = class {
                     break;
                 }
             }
-<<<<<<< Updated upstream
-=======
             if (infer) {
                 switch (section.type) {
                     case 'convolutional':
@@ -486,25 +462,16 @@ darknet.Graph = class {
                 section.chain = section.chain || [];
                 section.chain.push(chain);
             }
->>>>>>> Stashed changes
         }
         for (let i = 0; i < sections.length; i++) {
             this._nodes.push(new darknet.Node(metadata, net, sections[i], i.toString()));
         }
 
         if (sections.length > 0) {
-<<<<<<< Updated upstream
-            const lastLayer = sections[sections.length - 1];
-            for (let i = 0; i < lastLayer._outputs.length; i++) {
-                this._outputs.push(new darknet.Parameter('output' + (i > 1 ? i.toString() : ''), true, [
-                    new darknet.Argument(lastLayer._outputs[i], null, null)
-                ]));
-=======
             const last = sections[sections.length - 1];
             for (let i = 0; i < last.outputs.length; i++) {
                 const outputName = 'output' + (i > 1 ? i.toString() : '');
                 this._outputs.push(new darknet.Parameter(outputName, true, [last.outputs[i]]));
->>>>>>> Stashed changes
             }
         }
     }
@@ -582,12 +549,6 @@ darknet.Node = class {
                 return new darknet.Argument(input, null, null);
             })));
         }
-<<<<<<< Updated upstream
-        if (layer._outputs && layer._outputs.length > 0) {
-            this._outputs.push(new darknet.Parameter(layer._outputs.length <= 1 ? 'output' : 'outputs', true, layer._outputs.map((output) => {
-                return new darknet.Argument(output, null, null);
-            })));
-=======
         if (section.tensors && section.tensors.length > 0) {
             for (let tensor of section.tensors) {
                 const type = new darknet.TensorType('float', new darknet.TensorShape(tensor.shape));
@@ -595,7 +556,6 @@ darknet.Node = class {
                     new darknet.Argument('', null, new darknet.Tensor('', type))
                 ]))
             }
->>>>>>> Stashed changes
         }
         switch (layer.type) {
             case 'convolutional':
