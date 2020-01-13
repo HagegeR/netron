@@ -12039,7 +12039,7 @@
   {
     "name": "FloatToFused8BitRowwiseQuantized",
     "schema": {
-      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, the first 4 bytes\nof each row in the output matrix are a 32-bit float storing the scale,\nthe next 4 bytes store the bias as a 32-bit float, and all remaining\nbytes in the row encode single quantized values.)\n",
+      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, each row contains\nint8 elements for each quantized element, and the last 8 bytes\nof each row in the output matrix are a float storing the scale\nfollowed by another float containing the scale.)\n",
       "inputs": [
         {
           "description": "Float32 input data",
@@ -15985,7 +15985,7 @@
   {
     "name": "HalfFloatToFused8BitRowwiseQuantized",
     "schema": {
-      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, the first 4 bytes\nof each row in the output matrix are a 32-bit float storing the scale,\nthe next 4 bytes store the bias as a 32-bit float, and all remaining\nbytes in the row encode single quantized values.)\n",
+      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, each row contains\nint8 elements for each quantized element, and the last 8 bytes\nof each row in the output matrix are a float storing the scale\nfollowed by another float containing the scale.)\n",
       "inputs": [
         {
           "description": "Float16 input data",
@@ -17008,6 +17008,185 @@
         {
           "description": "Output tensor",
           "name": "Y"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "BatchPermutation",
+    "schema": {
+      "description": "\nBatch permutation of an input tensor X given input indices. First dimension of\nX equals batch size N. The indices stores a be permutation of N.\nThe output Y is a tensor of same shape as X, with data re-ordered according to\nthe indices within the batch size.\n\nExample of batch permutation on a 2-D tensor with batch size 4:\n  X = [\n    [1, 5, 2, 3, 4, 6, 0],\n    [4, 3, 3, 5, 2, 3, 1],\n    [2, 2, 3, 6, 0, 0, 1],\n    [0, 0, 1, 1, 2, 2, 3]\n  ]\n  indices = [2, 0, 1, 3]\n  Y = [\n    [2, 2, 3, 6, 0, 0, 1],\n    [1, 5, 2, 3, 4, 6, 0],\n    [4, 3, 3, 5, 2, 3, 1],\n    [0, 0, 1, 1, 2, 2, 3]\n  ]\n\nExample of batch permutation on a 3-D tensor with batch size 4:\n  X = [\n    [[1, 5, 2], [3, 4, 6, 0]],\n    [[4, 3, 3], [5, 2, 3, 1]],\n    [[2, 2, 3], [6, 0, 0, 1]],\n    [[0, 0, 1], [1, 2, 2, 3]]\n  ]\n  indices = [2, 0, 1, 3]\n  Y = [\n    [[2, 2, 3], [6, 0, 0, 1]],\n    [[1, 5, 2], [3, 4, 6, 0]],\n    [[4, 3, 3], [5, 2, 3, 1]],\n    [[0, 0, 1], [1, 2, 2, 3]]\n  ]\n",
+      "inputs": [
+        {
+          "description": "Input tensor, where 1st dimension equals batch size",
+          "name": "X"
+        },
+        {
+          "description": "Input indices of batch to permute",
+          "name": "indices"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Output permuted tensor",
+          "name": "Y"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "BatchPermutationGradient",
+    "schema": {
+      "description": null,
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "AliasWithName",
+    "schema": {
+      "attributes": [
+        {
+          "description": "name of the aliasing",
+          "name": "name",
+          "option": "optional"
+        },
+        {
+          "description": "weather or not to alias forward or backward",
+          "name": "is_backward",
+          "option": "optional"
+        }
+      ],
+      "description": "\nSimilar with AliasOp, storing the alias name as operator argument.\n",
+      "inputs": [
+        {
+          "description": "Input tensor whose storage will be shared.",
+          "name": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Tensor of same shape as input, sharing its storage.",
+          "name": "output"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "RowWiseCounter",
+    "schema": {
+      "attributes": [
+        {
+          "description": "Default -1: off",
+          "name": "counter_halflife",
+          "option": "optional"
+        }
+      ],
+      "description": "\n    Count the number recent update on rows. Exponential decay is\n    applied on the counter with decay rate r, such that\n    r^{counter_halflife} = 0.5; If counter_halflife is nonpositive,\n    this operator is turned off.\n",
+      "inputs": [
+        {
+          "description": "Iter at last update",
+          "name": "prev_iter"
+        },
+        {
+          "description": "update counter",
+          "name": "update_counter"
+        },
+        {
+          "description": "Sparse indices",
+          "name": "indices"
+        },
+        {
+          "description": "current iteration",
+          "name": "iter"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Updated iter at last update",
+          "name": "output_prev_iter"
+        },
+        {
+          "description": "Output update counter",
+          "name": "output_update_counter"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "Fused8BitRowwiseQuantizedHalfScaleBiasToHalfFloat",
+    "schema": {
+      "description": "\nDe-quantizes the result of the\nFloatToFused8BitRowwiseQuantized operator. The input is expected to\nencode the scale as a 16-bit float in the second to the last 2 bytes of each\nrow, followed by the bias as a 16-bit float in the next 2 bytes, and the\nquantized values in the preceding bytes of the row. The output is a\nmatrix containing only the values, but de-quantized. De-quantization is\nperformed by multiplying each value by its row's scale and bias\nparameters. The de-quantized values will thus not be exactly equal to\nthe original, un-quantized floating point values.\n",
+      "inputs": [
+        {
+          "description": "Fused scale, bias and quantized data",
+          "name": "scale_bias_quantized_input"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Float32 data",
+          "name": "float_output"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "FloatToFused8BitRowwiseQuantizedHalfScaleBias",
+    "schema": {
+      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, each row contains\nint8 elements for each quantized element, and the last 4 bytes\nof each row in the output matrix are a half float storing the scale\nfollowed by another half float containing the scale.)\n",
+      "inputs": [
+        {
+          "description": "Float32 input data",
+          "name": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Fused scale, bias and quantized data",
+          "name": "output"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "HalfFloatToFused8BitRowwiseQuantizedHalfScaleBias",
+    "schema": {
+      "description": "\nApplies 8-bit row-wise quantization by determining the range\n(maximum - minimum) and offset (minimum value) of each row in the input\nmatrix, and then scaling each element to an 8-bit number between 0 and\n255. To later de-quantize values, the scale (range / 255) and offset\n(bias) are stored alongside the data. More precisely, each row contains\nint8 elements for each quantized element, and the last 4 bytes\nof each row in the output matrix are a float storing the scale\nfollowed by another float containing the scale.)\n",
+      "inputs": [
+        {
+          "description": "Float16 input data",
+          "name": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Fused scale, bias and quantized data",
+          "name": "output"
+        }
+      ],
+      "support_level": "default"
+    }
+  },
+  {
+    "name": "Fused8BitRowwiseQuantizedHalfScaleBiasToFloat",
+    "schema": {
+      "description": "\nDe-quantizes the result of the\nFloatToFused8BitRowwiseQuantized operator. The input is expected to\nencode the scale as a 16-bit float in the second to the last 2 bytes of each\nrow, followed by the bias as a 16-bit float in the next 2 bytes, and the\nquantized values in the preceding bytes of the row. The output is a\nmatrix containing only the values, but de-quantized. De-quantization is\nperformed by multiplying each value by its row's scale and bias\nparameters. The de-quantized values will thus not be exactly equal to\nthe original, un-quantized floating point values.\n",
+      "inputs": [
+        {
+          "description": "Fused scale, bias and quantized data",
+          "name": "scale_bias_quantized_input"
+        }
+      ],
+      "outputs": [
+        {
+          "description": "Float32 data",
+          "name": "float_output"
         }
       ],
       "support_level": "default"

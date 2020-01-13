@@ -7,23 +7,17 @@ bold() {
     echo "$(tty -s && tput bold)$1$(tty -s && tput sgr0)" 
 }
 
-git_sync() {
-    mkdir -p "./third_party"
-    if [ -d "./third_party/${1}" ]; then
-        git -C "./third_party/${1}" pull --quiet --prune
-    else
-        git -C "./third_party" clone --quiet --recursive ${2} ${1}
-    fi
-}
-
 clean() {
     bold "darknet clean"
-    rm -rf ./third_party/darknet
+    rm -rf "./third_party/src/darknet"
 }
 
 sync() {
     bold "darknet sync"
-    git_sync darknet https://github.com/AlexeyAB/darknet.git
+    [ -d "./third_party/src/darknet" ] || git clone --quiet https://github.com/AlexeyAB/darknet.git "./third_party/src/darknet"
+    pushd "./third_party/src/darknet" > /dev/null
+    git pull --quiet --prune
+    popd > /dev/null
 }
 
 while [ "$#" != 0 ]; do

@@ -48,7 +48,6 @@ categories = {
 
     'Flatten': 'Shape',
     'Reshape': 'Shape',
-    'Transpose': 'Shape',
     'Tile': 'Shape',
 
     'Xor': 'Logic',
@@ -74,7 +73,9 @@ categories = {
 
     'ImageScaler': 'Data',
     'Crop': 'Data',
+    'Upsample': 'Data',
 
+    'Transpose': 'Transform',
     'Gather': 'Transform',
     'Unsqueeze': 'Transform',
     'Squeeze': 'Transform',

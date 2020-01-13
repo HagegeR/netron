@@ -4,12 +4,12 @@
     "schema": {
       "category": "Layer",
       "inputs": [
-        { "name": "input", "type": "T" },
-        { "name": "weights", "type": "T" },
-        { "name": "bias", "type": "T" }
+        { "name": "input" },
+        { "name": "weights" },
+        { "name": "bias" }
       ],
       "outputs": [
-        { "name": "output", "type": "T" }
+        { "name": "output" }
       ],
       "attributes": [
         { "name": "padding", "type": "Padding", "default": "SAME" },
@@ -91,8 +91,9 @@
         { "name": "output", "type": "T" }
       ],
       "attributes": [
+        { "name": "fused_activation_function", "type": "ActivationFunctionType", "default": "NONE" },
         { "name": "weights_format", "type": "FullyConnectedOptionsWeightsFormat", "default": "DEFAULT" },
-        { "name": "fused_activation_function", "type": "ActivationFunctionType", "default": "NONE" }
+        { "name": "keep_num_dims", "type": "boolean" }
       ]
     }
   },
@@ -268,6 +269,24 @@
     "name": "Normalize",
     "schema": {
       "category": "Normalization",
+      "inputs": [
+        { "name": "input" }
+      ],
+      "outputs": [
+        { "name": "output" }
+      ]
+    }
+  },
+  {
+    "name": "LocalResponseNormalization",
+    "schema": {
+      "category": "Normalization",
+      "attributes": [
+        { "name": "radius", "type": "int32", "default": 5 },
+        { "name": "bias", "type": "float32", "default": 1 },
+        { "name": "alpha", "type": "float32", "default": 1 },
+        { "name": "beta", "type": "float32", "default": 0.5 }
+      ],
       "inputs": [
         { "name": "input" }
       ],
@@ -508,6 +527,90 @@
       "inputs": [
         { "name": "input" },
         { "name": "positions" }
+      ],
+      "outputs": [
+        { "name": "output" }
+      ]
+    }
+  },
+  {
+    "name": "Cast",
+    "schema": {
+      "attributes": [
+        { "name": "in_data_type", "type": "TensorType" },
+        { "name": "out_data_type", "type": "TensorType" }
+      ],
+      "inputs": [
+        { "name": "input" }
+      ],
+      "outputs": [
+        { "name": "output" }
+      ]
+    }
+  },
+  {
+    "name": "ArgMax",
+    "schema": {
+      "attributes": [
+        { "name": "output_type", "type": "TensorType" }
+      ]
+    }
+  },
+  {
+    "name": "ArgMin",
+    "schema": {
+      "attributes": [
+        { "name": "output_type", "type": "TensorType" }
+      ]
+    }
+  },
+  {
+    "name": "TransposeConv",
+    "schema": {
+      "attributes": [
+        { "name": "padding", "type": "Padding" },
+        { "name": "stride_w", "type": "int32" },
+        { "name": "stride_h", "type": "int32" }
+      ]
+    }
+  },
+  {
+    "name": "Shape",
+    "schema": {
+      "attributes": [
+        { "name": "out_type", "type": "TensorType" }
+      ]
+    }
+  },
+  {
+    "name": "Unique",
+    "schema": {
+      "attributes": [
+        { "name": "idx_out_type", "type": "TensorType", "default": "int32" }
+      ]
+    }
+  },
+  {
+    "name": "Slice",
+    "schema": {
+      "category": "Tensor",
+      "inputs": [
+        { "name": "input" },
+        { "name": "begin" },
+        { "name": "size" }
+      ],
+      "outputs": [
+        { "name": "output" }
+      ]
+    }
+  },
+  {
+    "name": "Transpose",
+    "schema": {
+      "category": "Transform",
+      "inputs": [
+        { "name": "input" },
+        { "name": "perm" }
       ],
       "outputs": [
         { "name": "output" }

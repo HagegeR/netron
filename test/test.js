@@ -113,7 +113,7 @@ class TestHost {
 
     _raise(event, data) {
         if (this._events && this._events[event]) {
-            for (let callback of this._events[event]) {
+            for (const callback of this._events[event]) {
                 callback(this, data);
             }
         }
@@ -362,7 +362,7 @@ function download(folder, targets, sources) {
             sources = '';
         }
     }
-    for (let target of targets) {
+    for (const target of targets) {
         makeDir(path.dirname(folder + '/' + target));
     }
     return downloadFile(source).then((data) => {
@@ -372,7 +372,7 @@ function download(folder, targets, sources) {
             }
             process.stdout.write('  decompress...\r');
             const archive = decompress(data, source.split('?').shift().split('/').pop());
-            for (let file of sourceFiles) {
+            for (const file of sourceFiles) {
                 if (process.stdout.clearLine) {
                     process.stdout.clearLine();
                 }
@@ -409,11 +409,13 @@ function script(folder, targets, command, args) {
     }
     return new Promise((resolve, reject) => {
         try {
-            console.log('  ' + command + ' ' + args);
+            const comspec = process.env.COMSPEC;
             if (process.platform === 'win32' && process.env.SHELL) {
                 process.env.COMSPEC = process.env.SHELL;
+                command = '/' + command.split(':').join('').split('\\').join('/');
             }
             child_process.execSync(command + ' ' + args, { stdio: [ 0, 1 , 2] });
+            process.env.COMSPEC = comspec;
             resolve();
         }
         catch (error) {
@@ -456,11 +458,11 @@ function loadModel(target, item) {
         model.description;
         model.author;
         model.license;
-        for (let graph of model.graphs) {
-            for (let input of graph.inputs) {
+        for (const graph of model.graphs) {
+            for (const input of graph.inputs) {
                 input.name.toString();
                 input.name.length;
-                for (let argument of input.arguments) {
+                for (const argument of input.arguments) {
                     argument.id.toString();
                     argument.id.length;
                     if (argument.type) {
@@ -468,10 +470,10 @@ function loadModel(target, item) {
                     }
                 }
             }
-            for (let output of graph.outputs) {
+            for (const output of graph.outputs) {
                 output.name.toString();
                 output.name.length;
-                for (let argument of output.arguments) {
+                for (const argument of output.arguments) {
                     argument.id.toString();
                     argument.id.length;
                     if (argument.type) {
@@ -479,13 +481,13 @@ function loadModel(target, item) {
                     }
                 }
             }
-            for (let node of graph.nodes) {
+            for (const node of graph.nodes) {
                 node.name.toString();
                 node.name.length;
                 node.description;
                 node.documentation.toString();
                 node.category.toString();
-                for (let attribute of node.attributes) {
+                for (const attribute of node.attributes) {
                     attribute.name.toString();
                     attribute.name.length;
                     let value = sidebar.NodeSidebar.formatAttributeValue(attribute.value, attribute.type)
@@ -494,10 +496,10 @@ function loadModel(target, item) {
                     }
                     value = value.split('<');
                 }
-                for (let input of node.inputs) {
+                for (const input of node.inputs) {
                     input.name.toString();
                     input.name.length;
-                    for (let argument of input.arguments) {
+                    for (const argument of input.arguments) {
                         argument.id.toString();
                         argument.id.length;
                         argument.description;
@@ -510,10 +512,10 @@ function loadModel(target, item) {
                         }
                     }
                 }
-                for (let output of node.outputs) {
+                for (const output of node.outputs) {
                     output.name.toString();
                     output.name.length;
-                    for (let argument of output.arguments) {
+                    for (const argument of output.arguments) {
                         argument.id.toString();
                         argument.id.length;
                         if (argument.type) {
@@ -522,7 +524,7 @@ function loadModel(target, item) {
                     }
                 }
                 if (node.chain) {
-                    for (let chain of node.chain) {
+                    for (const chain of node.chain) {
                         chain.name.toString();
                         chain.name.length;
                     }
@@ -581,9 +583,10 @@ function next() {
 
     let promise = null;
     if (item.script) {
+        const index = item.script.search(' ');
         const root = path.dirname(__dirname);
-        const command = path.resolve(root, item.script[0]);
-        const args = item.script[1];
+        const command = path.resolve(root, item.script.substring(0, index));
+        const args = item.script.substring(index + 1);
         promise = script(folder, targets, command, args);
     }
     else {

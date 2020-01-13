@@ -13,52 +13,48 @@ bold() {
 }
 
 venv() {
-    venv_dir=./third_party/venv/pytorch
-    [ -d "${venv_dir}" ] || ${python} -m venv ${venv_dir}
+    env_dir=./third_party/env/pytorch
+    [ -d "${env_dir}" ] || ${python} -m venv ${env_dir}
     case "${OSTYPE}" in
-        msys*) source ${venv_dir}/Scripts/activate;;
-        *) source ${venv_dir}/bin/activate;;
+        msys*) source ${env_dir}/Scripts/activate;;
+        *) source ${env_dir}/bin/activate;;
     esac
     ${python} -m pip install --quiet --upgrade pip
 }
 
-git_sync() {
-    mkdir -p "./third_party"
-    if [ -d "./third_party/${1}" ]; then
-        git -C "./third_party/${1}" pull --quiet --prune
-    else
-        git -C "./third_party" clone --quiet --recursive ${2} ${1}
-    fi
-    git -C "./third_party/${1}" submodule sync --quiet
-    git -C "./third_party/${1}" submodule update --quiet --init --recursive
-}
-
 clean() {
     bold "pytorch clean"
-    rm -rf ./third_party/venv/pytorch
-    rm -rf ./third_party/pytorch
-    rm -rf ./third_party/torchvision
+    rm -rf "./third_party/env/pytorch"
+    rm -rf "./third_party/src/pytorch"
+    rm -rf "./third_party/src/torchvision"
 }
 
 sync() {
     bold "pytorch sync"
-    git_sync pytorch https://github.com/pytorch/pytorch.git
-    git_sync torchvision https://github.com/pytorch/vision.git
+    [ -d "./third_party/src/pytorch" ] || git clone --quiet --recursive https://github.com/pytorch/pytorch.git "./third_party/src/pytorch"
+    pushd "./third_party/src/pytorch" > /dev/null
+    git pull --quiet --prune
+    git submodule sync --quiet
+    git submodule update --quiet --init --recursive
+    popd > /dev/null
+    [ -d "./third_party/src/torchvision" ] || git clone --quiet --recursive https://github.com/pytorch/vision.git "./third_party/src/torchvision"
+    pushd "./third_party/src/torchvision" > /dev/null
+    git pull --quiet --prune
+    popd > /dev/null
 }
 
 install() {
     bold "pytorch install"
     venv
     ${python} -m pip install --quiet --upgrade future protobuf scipy
-    ${python} -m pip install --quiet --pre --upgrade torch -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-    ${python} -m pip install --quiet --pre --upgrade torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+    ${python} -m pip install --quiet --upgrade --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
     deactivate
 }
 
 schema() {
     bold "caffe2 schema"
     [[ $(grep -U $'\x0D' ./src/caffe2-proto.js) ]] && crlf=1
-    npx pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --no-convert --no-verify --no-create --keep-case --decode-text -r caffe2 -o ./src/caffe2-proto.js ./third_party/pytorch/caffe2/proto/caffe2.proto
+    npx pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --no-convert --no-verify --no-create --keep-case --decode-text -r caffe2 -o ./src/caffe2-proto.js ./third_party/src/pytorch/caffe2/proto/caffe2.proto
     node ./tools/update_pbjs.js enumeration ./src/caffe2-proto.js floats float 1
     if [[ -n ${crlf} ]]; then
         unix2dos --quiet --newfile ./src/caffe2-proto.js ./src/caffe2-proto.js
