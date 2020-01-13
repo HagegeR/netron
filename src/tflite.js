@@ -113,8 +113,9 @@ tflite.Graph = class {
             const tensor = graph.tensors(i);
             let initializer = null;
             const buffer = model.buffers(tensor.buffer());
-            if (buffer.dataLength() > 0) {
-                initializer = new tflite.Tensor(tensor, buffer);
+            const is_variable = tensor.isVariable();
+            if (buffer.dataLength() > 0 || is_variable) {
+                initializer = new tflite.Tensor(tensor, buffer, is_variable);
             }
             args.push(new tflite.Argument(tensor, i, initializer));
             names.push(tensor.name());
@@ -123,7 +124,7 @@ tflite.Graph = class {
             const node = graph.operators(j);
             const opcodeIndex = node.opcodeIndex();
             const operator = (opcodeIndex < operatorCodeList.length) ? operatorCodeList[opcodeIndex] : { name: '(' + opcodeIndex.toString() + ')' };
-            this._nodes.push(new tflite.Node(metadata, node, operator, j.toString(), args));
+            this._nodes.push(new tflite.Node(metadata, node, operator, args));
         }
         for (let k = 0; k < graph.inputsLength(); k++) {
             const inputIndex = graph.inputs(k);
@@ -158,10 +159,9 @@ tflite.Graph = class {
 
 tflite.Node = class {
 
-    constructor(metadata, node, operator, name, args) {
+    constructor(metadata, node, operator, args) {
         this._metadata = metadata;
         this._operator = operator;
-        this._name = name;
         this._inputs = [];
         this._outputs = [];
         if (node) {
@@ -269,7 +269,7 @@ tflite.Node = class {
                                         value = activationFunctionMap[value];
                                     }
                                     this._chain = [];
-                                    this._chain.push(new tflite.Node(metadata, null, { name: value }, '', []));
+                                    this._chain.push(new tflite.Node(metadata, null, { name: value }, []));
                                 }
                             }
                             this._attributes.push(attribute);
@@ -285,7 +285,7 @@ tflite.Node = class {
     }
 
     get name() {
-        return this._name;
+        return '';
     }
 
     get domain() {
@@ -487,10 +487,15 @@ tflite.Argument = class {
 
 tflite.Tensor = class {
 
-    constructor(tensor, buffer) {
+    constructor(tensor, buffer, is_variable) {
         this._name = tensor.name();
         this._type = new tflite.TensorType(tensor);
         this._data = buffer.dataLength() > 0 ? buffer.dataArray() : null;
+        this._is_variable = is_variable;
+    }
+
+    get kind() {
+        return this._is_variable ? 'Variable' : '';
     }
 
     get name() {

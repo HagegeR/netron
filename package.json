@@ -6,14 +6,14 @@
         "email": "lutzroeder@users.noreply.github.com",
         "url": "https://www.lutzroeder.com"
     },
-    "version": "3.6.2",
+    "version": "3.6.3",
     "description": "Visualizer for neural network, deep learning and machine learning models",
     "license": "MIT",
     "repository": "lutzroeder/netron",
     "main": "src/app.js",
     "scripts": {
         "start": "[ -d node_modules ] || npm install && npx electron .",
-        "start_server": "[ -d node_modules ] || npm install && python3 setup.py --quiet build && PYTHONPATH=build/lib python3 -c 'import netron; netron.main()' $@"
+        "start_server": "[ -d node_modules ] || npm install && python3 setup.py --quiet build && PYTHONPATH=./dist/lib python3 -c 'import netron; netron.main()' $@"
     },
     "dependencies": {
         "d3": "5.14.2",
@@ -28,7 +28,7 @@
         "universal-analytics": "0.4.20"
     },
     "devDependencies": {
-        "electron": "7.1.2",
+        "electron": "7.1.5",
         "electron-builder": "22.2.0",
         "electron-notarize": "0.2.1",
         "eslint": "6.7.2",
